@@ -3,7 +3,6 @@ svmPython
 Created on Sep 24, 2014
 @author: jean-mathieu vermosen
 '''
-'''aaa'''
 
 class bar:
     """Iterator for looping over a sequence backwards."""
