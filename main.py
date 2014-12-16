@@ -4,6 +4,7 @@ Created on Sep 24, 2014
 @author: jean-mathieu vermosen
 '''
 
+
 import datetime
 import mysql.connector
 from mysql.connector import errorcode
@@ -37,24 +38,34 @@ else:
     
     cursor = cnx.cursor()
     
-    query = ("SELECT BAR_DATETIME, BAR_OPEN, BAR_CLOSE, BAR_HIGH, BAR_LOW, BAR_VOLUME, BAR_LENGTH "
+    query = ("SELECT BAR_DATETIME, BAR_OPEN, BAR_CLOSE, "
+             "BAR_HIGH, BAR_LOW, BAR_VOLUME, BAR_LENGTH "
              "FROM table_bar "
-             "WHERE (INSTRUMENT_ID = 256 AND BAR_DATETIME BETWEEN %s AND %s)")
+             "WHERE (INSTRUMENT_ID = 256 AND BAR_DATETIME "
+             "BETWEEN %s AND %s)")
     
-    ''' select 1 second at the market opening '''
+    ''' select 1 day of trading '''
     queryStart = datetime.datetime(2014, 3, 3, 14, 30, 0)
-    queryEnd = datetime.datetime(2014, 3, 3, 14, 30, 1)
+    queryEnd = datetime.datetime(2014, 3, 3, 21, 0, 0)
     
     ''' execute the query '''
     cursor.execute(query, (queryStart, queryEnd))
     
+    bars = []
+    
     for (BAR_DATETIME, BAR_OPEN, BAR_CLOSE, BAR_HIGH, BAR_LOW, BAR_VOLUME, BAR_LENGTH) in cursor:
         
-        tt = bar(BAR_DATETIME, BAR_LENGTH, BAR_OPEN, BAR_CLOSE, BAR_HIGH, BAR_LOW, BAR_VOLUME)
+        ''' create a bar '''
+        bars.append(bar(BAR_DATETIME, 
+                        BAR_LENGTH, 
+                        BAR_OPEN, 
+                        BAR_CLOSE, 
+                        BAR_HIGH, 
+                        BAR_LOW, 
+                        BAR_VOLUME))
         
-        print(tt)
-        '''print("{}, open: {}, close {}, volume{}".format(
-        BAR_DATETIME, BAR_OPEN, BAR_CLOSE, BAR_VOLUME))'''
-      
     cursor.close()
     cnx.close()
+    
+    print('number of bars: %s' % len(bars))
+    

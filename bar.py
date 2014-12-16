@@ -4,12 +4,12 @@ Created on Sep 24, 2014
 @author: jean-mathieu vermosen
 '''
 
-from enum import Enum
+'''from enum import Enum
 
-''' enumeration for built-in bar length '''
+enumeration for built-in bar length
 class barLength(Enum):
-    ms100 = 1
-    
+   ms100 = 1
+'''    
 class bar:
     
     ''' Some bar class '''
@@ -27,12 +27,13 @@ class bar:
     ''' print() operator '''
     def __str__(self):
     
-        return 'date: %s, open price: %s, close price: %s, volume:' \
+        return 'date: %s, open price: %s, close price: %s, volume: %s' \
         % (self.startDate.strftime('%m-%d-%Y'), 
            str(self.open),
            str(self.close),
-           str(self(volume)))
+           str(self.volume))
         
     ''' calculate the end date'''
-    def __end__(self):
+    def __endDate__(self):
         
+        return self.startDate
