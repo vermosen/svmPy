@@ -4,10 +4,10 @@ Created on Sep 24, 2014
 @author: jean-mathieu vermosen
 '''
 
-import bar
 import datetime
 import mysql.connector
 from mysql.connector import errorcode
+from bar import bar
 
 try:
     
@@ -49,7 +49,10 @@ else:
     cursor.execute(query, (queryStart, queryEnd))
     
     for (BAR_DATETIME, BAR_OPEN, BAR_CLOSE, BAR_HIGH, BAR_LOW, BAR_VOLUME, BAR_LENGTH) in cursor:
-        bar(BAR_DATETIME, BAR_LENGTH, BAR_OPEN, BAR_CLOSE, BAR_HIGH, BAR_LOW, BAR_VOLUME)
+        
+        tt = bar(BAR_DATETIME, BAR_LENGTH, BAR_OPEN, BAR_CLOSE, BAR_HIGH, BAR_LOW, BAR_VOLUME)
+        
+        print(tt)
         '''print("{}, open: {}, close {}, volume{}".format(
         BAR_DATETIME, BAR_OPEN, BAR_CLOSE, BAR_VOLUME))'''
       
