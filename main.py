@@ -7,6 +7,7 @@ Created on Sep 24, 2014
 
 import datetime
 import mysql.connector
+import pandas as pd
 from mysql.connector import errorcode
 from bar import bar
 
@@ -68,4 +69,30 @@ else:
     cnx.close()
     
     print('number of bars: %s' % len(bars))
+    
+    ''' isolate the data '''
+    idx_    = [] 
+    close_  = [] 
+    volume_ = []
+    
+    for i in bars:
+        idx_.append    (i.startDate)
+        close_.append  (i.close    )
+        volume_.append (i.volume   )
+        
+    ''' create the data frame '''
+    data = {'close': close_, 
+            'volume': volume_}
+
+    for d in data:
+        d['indic'] = (d['close'] - d['close', -1])
+    
+    print(d.indic)
+    
+    ts = pd.TimeSeries(data = d, index = idx_)
+    
+    print(ts)
+    
+        
+        
     
