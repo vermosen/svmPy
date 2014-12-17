@@ -8,6 +8,8 @@ Created on Sep 24, 2014
 import datetime
 import mysql.connector
 import pandas as pd
+import numpy as np
+import pylab as pl
 from mysql.connector import errorcode
 from bar import bar
 
@@ -35,64 +37,81 @@ except mysql.connector.Error as err:
     else:
         print(err)
 
-else:
-    
-    cursor = cnx.cursor()
-    
-    query = ("SELECT BAR_DATETIME, BAR_OPEN, BAR_CLOSE, "
-             "BAR_HIGH, BAR_LOW, BAR_VOLUME, BAR_LENGTH "
-             "FROM table_bar "
-             "WHERE (INSTRUMENT_ID = 256 AND BAR_DATETIME "
-             "BETWEEN %s AND %s)")
-    
-    ''' select 1 day of trading '''
-    queryStart = datetime.datetime(2014, 3, 3, 14, 30, 0)
-    queryEnd = datetime.datetime(2014, 3, 3, 21, 0, 0)
-    
-    ''' execute the query '''
-    cursor.execute(query, (queryStart, queryEnd))
-    
-    bars = []
-    
-    for (BAR_DATETIME, BAR_OPEN, BAR_CLOSE, BAR_HIGH, BAR_LOW, BAR_VOLUME, BAR_LENGTH) in cursor:
-        
-        ''' create a bar '''
-        bars.append(bar(BAR_DATETIME, 
-                        BAR_LENGTH, 
-                        BAR_OPEN, 
-                        BAR_CLOSE, 
-                        BAR_HIGH, 
-                        BAR_LOW, 
-                        BAR_VOLUME))
-        
-    cursor.close()
-    cnx.close()
-    
-    print('number of bars: %s' % len(bars))
-    
-    ''' isolate the data '''
-    idx_    = [] 
-    close_  = [] 
-    volume_ = []
-    
-    for i in bars:
-        idx_.append    (i.startDate)
-        close_.append  (i.close    )
-        volume_.append (i.volume   )
-        
-    ''' create the data frame '''
-    data = {'close': close_, 
-            'volume': volume_}
+cursor = cnx.cursor()
 
-    for d in data:
-        d['indic'] = (d['close'] - d['close', -1])
+query = ("SELECT BAR_DATETIME, BAR_OPEN, BAR_CLOSE, "
+         "BAR_HIGH, BAR_LOW, BAR_VOLUME, BAR_LENGTH "
+         "FROM table_bar "
+         "WHERE (INSTRUMENT_ID = 256 AND BAR_DATETIME "
+         "BETWEEN %s AND %s)")
+
+''' select 1 day of trading '''
+queryStart = datetime.datetime(2014, 3, 3, 14, 30, 0)
+queryEnd   = datetime.datetime(2014, 3, 3, 21, 0 , 0)
+
+''' execute the query '''
+cursor.execute(query, (queryStart, queryEnd))
+
+bars = []
+
+for (BAR_DATETIME, 
+     BAR_OPEN, 
+     BAR_CLOSE, 
+     BAR_HIGH, 
+     BAR_LOW, 
+     BAR_VOLUME, 
+     BAR_LENGTH) in cursor:
     
-    print(d.indic)
+    ''' create a bar '''
+    bars.append(bar(BAR_DATETIME, 
+                    BAR_LENGTH, 
+                    BAR_OPEN, 
+                    BAR_CLOSE, 
+                    BAR_HIGH, 
+                    BAR_LOW, 
+                    BAR_VOLUME))
     
-    ts = pd.TimeSeries(data = d, index = idx_)
+''' close and cleanup '''
+cursor.close(); cnx.close()
+del cursor; del cnx
+
+print('number of bars: %s' % len(bars))
+
+''' create the series '''
+idx_    = []; close_  = []; volume_ = []
+
+''' feed the series '''
+for i in bars:                   
+    idx_.append    (i.startDate)
+    close_.append  (i.close    )
+    volume_.append (i.volume   )
     
-    print(ts)
+''' create the data frame '''
+data = pd.DataFrame({'close' : close_  , 
+                     'volume': volume_
+                    }, index = idx_)
     
-        
-        
+''' add columns '''
+data['price diff'] = pd.Series(data['close'] - data['close'].shift(1), 
+                               index=data.index)
+
+data['close change'] = pd.Series(np.sign(data['price diff']),
+                           index = data.index)
+
+''' print data types '''
+print(data.dtypes)
+
+''' print the head '''
+print(data.head())
+
+''' means '''
+print(data.mean())
+
+''' std dev '''
+print(data.std())
+
+''' histogram '''
+data.hist()
+
+pl.show()
     

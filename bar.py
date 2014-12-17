@@ -4,12 +4,13 @@ Created on Sep 24, 2014
 @author: jean-mathieu vermosen
 '''
 
-'''from enum import Enum
+from enum import Enum
 
-enumeration for built-in bar length
+''' enumeration for built-in bar length '''
 class barLength(Enum):
-   ms100 = 1
-'''    
+    
+    ms100 = 1
+    
 class bar:
     
     ''' Some bar class '''
@@ -17,7 +18,7 @@ class bar:
         
         '''feed the variables'''
         self.startDate = startDate_
-        self.length    =    length_
+        self.length    = barLength(length_)
         self.open      =      open_
         self.close     =     close_
         self.high      =      high_
