@@ -4,12 +4,14 @@ Created on Sep 24, 2014
 @author: jean-mathieu vermosen
 '''
 
-
 import datetime
 import mysql.connector
 import pandas as pd
 import numpy as np
 import pylab as pl
+from sklearn.linear_model import LogisticRegression as LR
+from sklearn.svm import SVC as SVM
+from sklearn.svm import LinearSVC as SVM_l
 from mysql.connector import errorcode
 from bar import bar
 
@@ -47,7 +49,7 @@ query = ("SELECT BAR_DATETIME, BAR_OPEN, BAR_CLOSE, "
 
 ''' select 1 day of trading '''
 queryStart = datetime.datetime(2014, 3, 3, 14, 30, 0)
-queryEnd   = datetime.datetime(2014, 3, 3, 21, 0 , 0)
+queryEnd   = datetime.datetime(2014, 3, 4, 21, 0 , 0)
 
 ''' execute the query '''
 cursor.execute(query, (queryStart, queryEnd))
@@ -71,11 +73,9 @@ for (BAR_DATETIME,
                     BAR_LOW, 
                     BAR_VOLUME))
     
-''' close and cleanup '''
+''' close the connection and cleanup '''
 cursor.close(); cnx.close()
-del cursor; del cnx
-
-print('number of bars: %s' % len(bars))
+del cursor    ; del cnx
 
 ''' create the series '''
 idx_    = []; close_  = []; volume_ = []
@@ -91,27 +91,60 @@ data = pd.DataFrame({'close' : close_  ,
                      'volume': volume_
                     }, index = idx_)
     
-''' add columns '''
+''' compute price change '''
 data['price diff'] = pd.Series(data['close'] - data['close'].shift(1), 
                                index=data.index)
 
 data['close change'] = pd.Series(np.sign(data['price diff']),
-                           index = data.index)
+                                 index = data.index)
 
-''' print data types '''
-print(data.dtypes)
+''' intercept '''
+data['intercept'] = 1.0
 
-''' print the head '''
-print(data.head())
+''' suppress the extra columns '''
+data = data.ix[:,['intercept', 'close change', 'volume']]
 
-''' means '''
-print(data.mean())
+''' creates the lagged change '''
+for i in range(1, 10):
+    data['lag ' + str(i)] = data['close change'].shift(i)
 
-''' std dev '''
-print(data.std())
+train_sz = int(len(data) * .6)          # training sample size
+data = data.ix[10:,:]                   # drop NaNs
+data_train = data.ix[:,:train_sz]       # training sample
 
-''' histogram '''
-data.hist()
+''' data studies '''
+print('number of bars: %s' % len(data)) # total number of bars
+print('training sample size: %s' 
+      % len(data_train))
+print(data.dtypes)                      # data types
+print(data.mean())                      # means
+print(data.std())                       # stdev
+data['volume'].plot(); pl.show()        # volume histograms
 
-pl.show()
-    
+''' resulting train sample '''
+print(data_train.head())
+
+''' 1 - logistic regression '''
+logit = LR(C=1.0, fit_intercept=False)
+logit.fit(X = data_train.drop('close change', axis=1), 
+          y = data_train['close change'])
+
+''' misclassification rate '''
+res_logit = logit.predict(X = data.drop('close change', axis=1))
+print('Logistic regression misclassification '
+      'rate on the test sample: %s' 
+      % np.mean(data['close change'] != res_logit))
+
+''' 2 - radial function basis svm '''
+svm = SVM(C = 1.0, kernel = 'rbf', gamma = 0.1, max_iter = 5000)
+svm.fit(X = data_train.drop('close change', axis=1), 
+        y = data_train['close change'])
+
+''' misclassification rate '''
+res_svm = svm.predict(X = data.drop('close change', axis=1))
+print('Radial basis-SVM misclassification '
+      'rate on the test sample: %s' 
+      % np.mean(data['close change'] != res_svm))
+
+''' linear SVM'''
+linear = SVM_l(C = 1.0, fit_intercept = False)
