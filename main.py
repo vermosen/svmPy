@@ -148,3 +148,11 @@ print('Radial basis-SVM misclassification '
 
 ''' linear SVM'''
 linear = SVM_l(C = 1.0, fit_intercept = False)
+linear.fit(X = data_train.drop('close change', axis=1), 
+           y = data_train['close change'])
+
+''' misclassification rate '''
+res_linear = linear.predict(X = data.drop('close change', axis=1))
+print('linear-SVM misclassification '
+      'rate on the test sample: %s' 
+      % np.mean(data['close change'] != res_linear))
