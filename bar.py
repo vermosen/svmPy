@@ -5,14 +5,20 @@ Created on Sep 24, 2014
 '''
 
 from enum import Enum
+from datetime import timedelta
 
 ''' enumeration for built-in bar length '''
 class barLength(Enum):
     
     ms100 = 1
+    min1  = 2
     
 class bar:
     
+    ''' static variable ''' 
+    lenDict = {barLength.ms100 : timedelta(milliseconds=100),
+               barLength.min1  : timedelta(seconds=1)       }
+        
     ''' Some bar class '''
     def __init__(self, startDate_, length_, open_, close_, high_, low_, volume_):
         
@@ -33,8 +39,14 @@ class bar:
            str(self.open),
            str(self.close),
            str(self.volume))
+     
         
-    ''' calculate the end date'''
-    def __endDate__(self):
+    ''' calculate the end date '''
+    def endDate(self):
         
-        return self.startDate
+        return self.startDate + self.lenDict[self.length]
+    
+    ''' insert the bar in some date frame '''
+    def insert(self, df):   
+        ''' insert '''
+        return df
