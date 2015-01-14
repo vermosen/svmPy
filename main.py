@@ -9,22 +9,22 @@ import mysql.connector
 import pandas as pd
 import numpy as np
 import pylab as pl
-from sklearn.linear_model import LogisticRegression as LR
-from sklearn.svm import SVC as SVM
-from sklearn.svm import LinearSVC as SVM_l
-from mysql.connector import errorcode
-from bar import bar
+from   sklearn.linear_model import LogisticRegression as LR
+from   sklearn.svm import SVC as SVM
+from   sklearn.svm import LinearSVC as SVM_l
+from   mysql.connector import errorcode
+from   bar import bar
 
 try:
     
     ''' connection configuration '''
-    config = {'user'              : 'root'                                  ,
-              'password'          : ''                                      ,
+    config = {'user'              : 'admin'                                 ,
+              'password'          : 'DIAle050580$'                          ,
               'host'              : 'localhost'                             ,
               'database'          : 'fixdb'                                 ,
-              'port'              : '3308'                                  ,
-              'unix_socket'       : '/opt/local/var/run/mysql56/mysqld.sock',
-              'option_files'      : '/opt/local/etc/mysql56/my.cnf'         ,
+              'port'              : '3306'                                  ,
+              #'unix_socket'       : '/opt/local/var/run/mysql56/mysqld.sock',
+              #'option_files'      : '/etc/my.cnf'         ,
               'raise_on_warnings' : True                                     }
     
     ''' connection to the database '''
@@ -33,7 +33,7 @@ try:
 except mysql.connector.Error as err:
 
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-        print("Something is wrong with your user name or password")
+        print("Something is wrong with the user name or password")
     elif err.errno == errorcode.ER_BAD_DB_ERROR:
         print("Database does not exists")
     else:
@@ -105,7 +105,7 @@ data['intercept'] = 1.0
 data = data.ix[:,['intercept', 'close change', 'volume']]
 
 ''' creates the lagged change '''
-for i in range(1, 10):
+for i in range(1, 10):                  
     data['lag ' + str(i)] = data['close change'].shift(i)
 
 train_sz = int(len(data) * .6)          # training sample size
